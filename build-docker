@@ -7,7 +7,8 @@ set -o pipefail
 dockerfile_path="$1"
 version="$2"
 repo="cmalabscience" # <-- this is the hardcoded bit
-img_name=$(basename -- "$dockerfile_path")
+base_docker_name=$(basename -- $dockerfile_path)
+img_name=${base_docker_name%.*}
 formed_tag="${repo}/${img_name}:${version}"
 build_env=$(mktemp -d)
 
@@ -45,5 +46,4 @@ if [ $fast = true ]; then
     echo "Done and done! Wanna push to the registry?"
     read -n 1 -p "Press any key to continue..."
 fi
-exit 1
 docker push "$formed_tag"
