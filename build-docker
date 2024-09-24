@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+set -e
+set -u
+set -o pipefail
+
+dockerfile_path="$1"
+version="$2"
+repo=$(cat ./basename)
+img_name="cmalabscience" ## <-- This is hardcoded!
+formed_tag="${repo}/${img_name}:${version}"
+build_env=$(mktemp -d)
+
+if [[ $* == *--flag* ]]; then
+    fast=true
+    echo "Going FFFAST!"
+else
+    fast=false
+fi
+
+echo "This is Bob, the dockerfile helper."
+echo "I've been pointed to $1."
+echo "I'll tag the new container as $formed_tag"
+
+if [ $fast  = true ]; then
+    echo "I'll rebuild the container, and then ask you if you want to push it."
+    echo "Here I go!"
+
+    for i in {5..1};
+    do
+        sleep 1
+        echo "$i ..."
+    done
+    sleep 1
+fi
+#--- rebuild the container
+docker build -f "$dockerfile_path" -t "$formed_tag" $build_env
+
+rm -r $build_env
+echo "Deleted empty build environment."
+
+#--- Ask if we want to push
+if [ $fast = true ]; then
+    echo ""
+    echo "Done and done! Wanna push to the registry?"
+    read -n 1 -p "Press any key to continue..."
+fi
+exit 1
+docker push "$formed_tag"
